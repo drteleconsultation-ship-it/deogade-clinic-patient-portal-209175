@@ -1,10 +1,12 @@
 import React from 'react';
 import BookingCard from '../components/BookingCard';
 import WhatsAppFloatingButton from '../components/WhatsAppFloatingButton';
+import GoogleMapSection from '../components/GoogleMapSection';
+import GoogleReviewsSection from '../components/GoogleReviewsSection';
 
 // PUBLIC_INTERFACE
 export default function Home() {
-  /** Home page with hero, booking card, services, map/reviews placeholders. */
+  /** Home page with hero, booking card, services, and integrated map/reviews sections. */
   const handleBook = () => {
     // Stepper opens from BookingCard; nothing to navigate here.
   };
@@ -53,40 +55,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="map" className="section" style={{ background: 'var(--color-surface)' }}>
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Find Us</h2>
-            <p className="section-subtitle">Google Map and directions</p>
-          </div>
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ width: '100%', aspectRatio: '16/9', background: '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}>
-              Map placeholder
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Integrated Map Section */}
+      <GoogleMapSection />
 
-      <section id="reviews" className="section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Reviews</h2>
-            <p className="section-subtitle">What our patients say</p>
-          </div>
-          <div className="grid-2">
-            <div className="card" style={{ padding: 20 }}>
-              <p>"Excellent care and very professional!"</p>
-              <div className="hr" />
-              <small>- Verified Patient</small>
-            </div>
-            <div className="card" style={{ padding: 20 }}>
-              <p>"Quick booking and friendly staff."</p>
-              <div className="hr" />
-              <small>- Verified Patient</small>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Integrated Reviews Section */}
+      <GoogleReviewsSection />
+
       <WhatsAppFloatingButton />
     </>
   );

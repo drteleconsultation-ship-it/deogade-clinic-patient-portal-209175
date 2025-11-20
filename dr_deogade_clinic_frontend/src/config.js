@@ -18,9 +18,16 @@ const parseJSON = (v, fallback = {}) => {
   try { return v ? JSON.parse(v) : fallback; } catch { return fallback; }
 };
 
-// PUBLIC_INTERFACE
+ // PUBLIC_INTERFACE
 export const APP_CONFIG = {
-  /** Centralized app config sourced from env. */
+  /** Centralized app config sourced from env.
+   * Feature flags can control visibility for sections like:
+   * { "maps": true, "reviews": true }
+   * Other relevant envs (read directly where needed):
+   * - REACT_APP_CLINIC_ADDRESS
+   * - REACT_APP_GOOGLE_MAPS_EMBED_URL
+   * - REACT_APP_GOOGLE_PLACE_URL
+   */
   apiBase: REACT_APP_API_BASE || REACT_APP_BACKEND_URL || '/api',
   frontendUrl: REACT_APP_FRONTEND_URL || window.location.origin,
   wsUrl: REACT_APP_WS_URL || '',
