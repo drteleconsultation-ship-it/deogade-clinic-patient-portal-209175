@@ -1,48 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+
+function Success() {
+  return (
+    <main className="container section">
+      <div className="card" style={{ padding: 24 }}>
+        <h1 className="section-title" role="status">Booking Confirmed</h1>
+        <p className="section-subtitle">Thank you! Your appointment is confirmed. A confirmation email will be sent shortly.</p>
+        <div className="hr" />
+        <a className="btn" href="/">Back to Home</a>
+      </div>
+    </main>
+  );
+}
+
+function Failure() {
+  return (
+    <main className="container section">
+      <div className="card" style={{ padding: 24 }}>
+        <h1 className="section-title" role="status">Payment/Booking Failed</h1>
+        <p className="section-subtitle">Something went wrong. Please try again or contact support via WhatsApp.</p>
+        <div className="hr" />
+        <a className="btn" href="/">Back to Home</a>
+      </div>
+    </main>
+  );
+}
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
+  /** Root application rendering the layout, header, footer, and routes.
+   * Routes:
+   * - /           -> Home
+   * - /success    -> Success placeholder
+   * - /failure    -> Failure placeholder
+   */
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="App" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/failure" element={<Failure />} />
+        </Routes>
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
 }
 
