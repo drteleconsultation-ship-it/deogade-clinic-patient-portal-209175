@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { generateTimeSlots } from '../utils/time';
+import BookingStepperModal from './BookingStepperModal';
 
 // PUBLIC_INTERFACE
 export default function BookingCard({ onBook }) {
-  /** Booking card to pick date/time (10-min slots) and appointment type. */
+  /** Booking card to pick date/time (10-min slots) and appointment type. Opens stepper modal. */
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [slot, setSlot] = useState('');
   const [mode, setMode] = useState('online');
+  const [open, setOpen] = useState(false);
 
   const slots = useMemo(() => generateTimeSlots({ start: '09:00', end: '18:00', intervalMinutes: 10 }), [date]);
 
@@ -14,6 +16,7 @@ export default function BookingCard({ onBook }) {
     e.preventDefault();
     if (!slot) return;
     onBook?.({ date, slot, mode });
+    setOpen(true);
   };
 
   return (
@@ -78,6 +81,11 @@ export default function BookingCard({ onBook }) {
           <a className="btn secondary" href="https://maps.google.com" target="_blank" rel="noreferrer">Get Directions</a>
         </div>
       </form>
+      <BookingStepperModal
+        open={open}
+        onClose={() => setOpen(false)}
+        initial={{ date, slot, mode }}
+      />
     </div>
   );
 }
