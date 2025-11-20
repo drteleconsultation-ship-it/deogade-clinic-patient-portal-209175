@@ -10,6 +10,7 @@ export default function BookingCard({ onBook }) {
   const [mode, setMode] = useState('online');
   const [open, setOpen] = useState(false);
 
+  // Working hours 9am-6pm 10-min interval
   const slots = useMemo(() => generateTimeSlots({ start: '09:00', end: '18:00', intervalMinutes: 10 }), [date]);
 
   const handleSubmit = (e) => {
@@ -55,7 +56,7 @@ export default function BookingCard({ onBook }) {
 
         <div style={{ marginTop: 16 }}>
           <div style={{ fontWeight: 600, marginBottom: 8 }}>Available Slots</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
+          <div role="listbox" aria-label="Available slots" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
             {slots.map((s) => (
               <button
                 key={s}
@@ -63,6 +64,7 @@ export default function BookingCard({ onBook }) {
                 onClick={() => setSlot(s)}
                 className="btn"
                 aria-pressed={slot === s}
+                aria-label={`Slot ${s}${slot === s ? ' selected' : ''}`}
                 style={{
                   padding: '10px 12px',
                   background: slot === s ? 'var(--color-secondary)' : 'var(--color-surface)',
@@ -77,7 +79,7 @@ export default function BookingCard({ onBook }) {
         </div>
 
         <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
-          <button className="btn" type="submit" disabled={!slot}>Continue</button>
+          <button className="btn" type="submit" disabled={!slot} aria-disabled={!slot}>Continue</button>
           <a className="btn secondary" href="https://maps.google.com" target="_blank" rel="noreferrer">Get Directions</a>
         </div>
       </form>

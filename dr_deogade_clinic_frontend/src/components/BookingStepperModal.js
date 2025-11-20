@@ -19,7 +19,7 @@ function Modal({ open, onClose, children, title }) {
       }}>
       <div className="card" style={{ width: '100%', maxWidth: 760, borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: 16, borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <strong id="booking-modal-title">Book Appointment</strong>
+          <strong id="booking-modal-title">{title || 'Book Appointment'}</strong>
           <button className="btn secondary" onClick={onClose} aria-label="Close booking modal">Close</button>
         </div>
         <div style={{ padding: 16 }}>
@@ -50,6 +50,12 @@ function Stepper({ step, steps }) {
     </ol>
   );
 }
+
+function FieldError({ children }) {
+  return <div role="alert" style={{ color: 'var(--color-error)', fontSize: 12, marginTop: 6 }}>{children}</div>;
+}
+
+const inputStyle = { width: '100%', padding: 12, borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-surface)' };
 
 // Steps
 function StepPatientDetails({ data, onChange, onNext }) {
@@ -101,12 +107,6 @@ function StepPatientDetails({ data, onChange, onNext }) {
     </section>
   );
 }
-
-function FieldError({ children }) {
-  return <div role="alert" style={{ color: 'var(--color-error)', fontSize: 12, marginTop: 6 }}>{children}</div>;
-}
-
-const inputStyle = { width: '100%', padding: 12, borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-surface)' };
 
 function StepSlotSelection({ data, onChange, onNext, onBack }) {
   const [date, setDate] = useState(data.date || new Date().toISOString().split('T')[0]);
@@ -351,7 +351,7 @@ function StepPayment({ data, onChange, onNext, onBack, onPaymentCreated }) {
   );
 }
 
-function StepReviewConfirm({ data, onBack, onSubmit }) {
+function StepReviewConfirm({ data, onBack }) {
   const [loading, setLoading] = useState(false);
   async function submit() {
     setLoading(true);
@@ -448,7 +448,11 @@ export default function BookingStepperModal({ open, onClose, initial }) {
   }, [open]);
 
   return (
-    <Modal open={open} onClose={onClose} title="Book Appointment">
+    <Modal
+      open={open}
+      onClose={() => { onClose(); setTimeout(() => { remove(DRAFT_KEY); setStep(0); }, 0); }}
+      title="Book Appointment"
+    >
       <Stepper step={step} steps={steps} />
       {step === 0 && <StepPatientDetails data={data} onChange={patch} onNext={next} />}
       {step === 1 && <StepSlotSelection data={data} onChange={patch} onNext={next} onBack={back} />}

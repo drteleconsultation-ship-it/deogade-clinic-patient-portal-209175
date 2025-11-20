@@ -1,14 +1,12 @@
 import React from 'react';
 import BookingCard from '../components/BookingCard';
 import WhatsAppFloatingButton from '../components/WhatsAppFloatingButton';
-import { navigateToPayment } from '../services/apiClient';
 
 // PUBLIC_INTERFACE
 export default function Home() {
   /** Home page with hero, booking card, services, map/reviews placeholders. */
-  const handleBook = (payload) => {
-    // Placeholder: integrate payment/flow in future steps
-    navigateToPayment(payload);
+  const handleBook = () => {
+    // Stepper opens from BookingCard; nothing to navigate here.
   };
 
   return (

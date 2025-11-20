@@ -9,7 +9,7 @@ function Success() {
   return (
     <main className="container section">
       <div className="card" style={{ padding: 24 }}>
-        <h1 className="section-title" role="status">Booking Confirmed</h1>
+        <h1 className="section-title" role="status" aria-live="polite">Booking Confirmed</h1>
         <p className="section-subtitle">Thank you! Your appointment is confirmed. A confirmation email will be sent shortly.</p>
         <div className="hr" />
         <a className="btn" href="/">Back to Home</a>
@@ -22,7 +22,7 @@ function Failure() {
   return (
     <main className="container section">
       <div className="card" style={{ padding: 24 }}>
-        <h1 className="section-title" role="status">Payment/Booking Failed</h1>
+        <h1 className="section-title" role="status" aria-live="assertive">Payment/Booking Failed</h1>
         <p className="section-subtitle">Something went wrong. Please try again or contact support via WhatsApp.</p>
         <div className="hr" />
         <a className="btn" href="/">Back to Home</a>
@@ -36,8 +36,8 @@ function App() {
   /** Root application rendering the layout, header, footer, and routes.
    * Routes:
    * - /           -> Home
-   * - /success    -> Success placeholder
-   * - /failure    -> Failure placeholder
+   * - /success    -> Success
+   * - /failure    -> Failure
    */
   return (
     <BrowserRouter>

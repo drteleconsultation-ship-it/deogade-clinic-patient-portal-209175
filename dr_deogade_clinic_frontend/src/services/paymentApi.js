@@ -2,6 +2,7 @@ import { APP_CONFIG } from '../config';
 import { apiPost } from './apiClient';
 import { useEffect, useRef } from 'react';
 
+ // In mock mode, payment intent and status are simulated locally without server calls
 const MOCK = !APP_CONFIG.apiBase || APP_CONFIG.apiBase === '/api';
 
 // PUBLIC_INTERFACE

@@ -1,7 +1,8 @@
 import { APP_CONFIG } from '../config';
 import { apiGet, apiPost } from './apiClient';
 
-// Internal helpers
+ // Internal helpers
+// MOCK mode is active when REACT_APP_API_BASE is empty or matches default '/api'
 const MOCK = !APP_CONFIG.apiBase || APP_CONFIG.apiBase === '/api';
 
 /**
