@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { generateTimeSlots } from '../utils/time';
 import BookingStepperModal from './BookingStepperModal';
+import { useOnlineStatus, OfflineBanner } from '../utils/useOnlineStatus';
 
 // PUBLIC_INTERFACE
 export default function BookingCard({ onBook }) {
@@ -9,6 +10,7 @@ export default function BookingCard({ onBook }) {
   const [slot, setSlot] = useState('');
   const [mode, setMode] = useState('online');
   const [open, setOpen] = useState(false);
+  const online = useOnlineStatus();
 
   // Working hours 9am-6pm 10-min interval
   const slots = useMemo(() => generateTimeSlots({ start: '09:00', end: '18:00', intervalMinutes: 10 }), [date]);
@@ -16,6 +18,7 @@ export default function BookingCard({ onBook }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!slot) return;
+    if (!online) return; // block when offline
     onBook?.({ date, slot, mode });
     setOpen(true);
   };
@@ -27,6 +30,7 @@ export default function BookingCard({ onBook }) {
         <h2 className="section-title">Choose your slot</h2>
         <p className="section-subtitle">Online or In-clinic consultation. 10-minute slots.</p>
       </div>
+      {!online && <OfflineBanner message="You are offline. Booking is disabled until internet is restored." />}
       <form onSubmit={handleSubmit} aria-label="booking form">
         <div className="grid-2">
           <div>
@@ -61,15 +65,18 @@ export default function BookingCard({ onBook }) {
               <button
                 key={s}
                 type="button"
-                onClick={() => setSlot(s)}
+                onClick={() => online && setSlot(s)}
                 className="btn"
                 aria-pressed={slot === s}
                 aria-label={`Slot ${s}${slot === s ? ' selected' : ''}`}
+                disabled={!online}
                 style={{
                   padding: '10px 12px',
                   background: slot === s ? 'var(--color-secondary)' : 'var(--color-surface)',
                   color: slot === s ? '#111827' : 'var(--color-text)',
-                  border: '1px solid var(--color-border)'
+                  border: '1px solid var(--color-border)',
+                  opacity: online ? 1 : 0.6,
+                  cursor: online ? 'pointer' : 'not-allowed'
                 }}
               >
                 {s}
@@ -79,7 +86,7 @@ export default function BookingCard({ onBook }) {
         </div>
 
         <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
-          <button className="btn" type="submit" disabled={!slot} aria-disabled={!slot}>Continue</button>
+          <button className="btn" type="submit" disabled={!slot || !online} aria-disabled={!slot || !online}>Continue</button>
           <a className="btn secondary" href="https://maps.google.com" target="_blank" rel="noreferrer">Get Directions</a>
         </div>
       </form>

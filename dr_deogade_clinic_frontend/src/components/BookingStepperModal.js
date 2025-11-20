@@ -4,6 +4,7 @@ import { createUpiPaymentIntent, usePaymentPolling } from '../services/paymentAp
 import { generateTimeSlots } from '../utils/time';
 import { isValidPhone, required } from '../utils/validation';
 import { load, save, remove } from '../utils/storage';
+import { useOnlineStatus, OfflineBanner } from '../utils/useOnlineStatus';
 
 // Storage keys
 const DRAFT_KEY = 'booking_draft';
@@ -280,6 +281,7 @@ function StepPayment({ data, onChange, onNext, onBack, onPaymentCreated }) {
   const [loading, setLoading] = useState(false);
   const [intent, setIntent] = useState(null);
   const [status, setStatus] = useState('idle');
+  const online = useOnlineStatus();
 
   async function createIntent() {
     setLoading(true);
@@ -353,7 +355,9 @@ function StepPayment({ data, onChange, onNext, onBack, onPaymentCreated }) {
 
 function StepReviewConfirm({ data, onBack }) {
   const [loading, setLoading] = useState(false);
+  const online = useOnlineStatus();
   async function submit() {
+    if (!online) return;
     setLoading(true);
     try {
       // Create/confirm booking
@@ -391,7 +395,7 @@ function StepReviewConfirm({ data, onBack }) {
       </div>
       <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
         <button className="btn secondary" onClick={onBack}>Back</button>
-        <button className="btn" onClick={submit} disabled={loading}>{loading ? 'Confirming…' : 'Confirm Booking'}</button>
+        <button className="btn" onClick={submit} disabled={loading || !online} aria-disabled={loading || !online}>{loading ? 'Confirming…' : 'Confirm Booking'}</button>
       </div>
     </section>
   );
