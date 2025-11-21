@@ -1,9 +1,9 @@
 //
+//
 // A lightweight fetch wrapper that uses REACT_APP_API_BASE and provides
 // timeout, JSON handling, and error normalization. In mock mode (no API base),
 // services can bypass network requests and return mocked data.
 //
-
 import { getEnv, hasApiBase } from '../config/env';
 import logger from '../utils/logger';
 
@@ -42,17 +42,7 @@ async function parseResponse(resp) {
  * Core request method with timeout and JSON support.
  */
 export async function httpRequest(path, { method = 'GET', headers = {}, body, timeoutMs = 12000, signal } = {}) {
-  /** Performs a network request to API base + path with timeout and JSON handling.
-   * Parameters:
-   *  - path: string (relative API path)
-   *  - method: HTTP method
-   *  - headers: object of request headers
-   *  - body: object|string|FormData; if object and header not set, will send as JSON
-   *  - timeoutMs: abort after timeout
-   *  - signal: optional AbortSignal
-   * Returns: { data, status, ok }
-   * Throws: Error with status and data when response not ok.
-   */
+  /** Performs a network request to API base + path with timeout and JSON handling. */
   const url = buildUrl(path);
   const log = logger.createLogger('http');
 
@@ -125,8 +115,7 @@ export async function httpUpload(path, formData, { headers = {}, timeoutMs, sign
  */
 export function isMockMode() {
   /** Returns true when there is no API base configured or mockAPIs flag is enabled. */
-  const mock = !hasApiBase();
-  return mock;
+  return !hasApiBase();
 }
 
 export default {

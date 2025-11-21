@@ -1,9 +1,10 @@
 //
+//
 // Reviews service to fetch clinic reviews, with mock fallback.
 //
-
 import { httpGet, isMockMode } from './httpClient';
 import logger from '../utils/logger';
+import { getEnv } from '../config/env';
 
 /**
  * PUBLIC_INTERFACE
@@ -12,6 +13,14 @@ import logger from '../utils/logger';
 export async function fetchReviews({ page = 1, pageSize = 10 } = {}) {
   /** Returns an array of reviews { name, rating, text, date } with pagination metadata when available. */
   const log = logger.createLogger('reviewsService');
+
+  // Short-circuit if feature is disabled
+  const { flags = {} } = getEnv();
+  if (flags.enableReviews === false) {
+    log.info('reviews disabled by flag');
+    return { items: [], page, pageSize, total: 0, disabled: true };
+  }
+
   if (isMockMode()) {
     // Provide deterministic mock data
     const items = [

@@ -1,13 +1,12 @@
 //
+//
 // Booking service encapsulating API calls and mock fallbacks for:
 // - createBooking
 // - listSlots
 // - confirmPayment
 // - uploadDocument
 //
-
 import { httpGet, httpPost, httpUpload, isMockMode } from './httpClient';
-import { getEnv } from '../config/env';
 import logger from '../utils/logger';
 
 /**
