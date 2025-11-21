@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { sendConfirmation } from '../services/emailService';
+import { useToast } from '../components/common/Toast';
 
 /**
  * Reads booking summary from navigation state to show confirmation info.
@@ -21,7 +23,27 @@ function useSuccessData() {
 export default function PaymentSuccess() {
   /** Success screen after payment, shows booking summary and next steps. */
   const { patient, slot, amount, orderId } = useSuccessData();
+  const toast = useToast();
 
+  useEffect(() => {
+    let did = false;
+    async function maybeSend() {
+      if (did) return;
+      did = true;
+      // If patient and slot exist, attempt send (as a safety net if previous screen couldn't)
+      if (patient && slot) {
+        try {
+          await sendConfirmation({ patient, slot, amount, orderId });
+          toast.success('Confirmation email sent!');
+        } catch (e) {
+          // Don't block the page; just notify
+          toast.error(`Could not send email: ${e?.message || 'Unknown error'}`);
+        }
+      }
+    }
+    maybeSend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <>
       <Header />

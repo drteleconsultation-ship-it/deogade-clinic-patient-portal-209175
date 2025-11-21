@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import UPIPaymentButton from '../../features/payments/UPIPaymentButton';
 import { getPaymentSummaryText } from '../../features/payments/paymentUtils';
 import FileDropzone from '../common/FileDropzone';
+import { sendConfirmation } from '../../services/emailService';
+import { useToast } from '../common/Toast';
 
 /**
  * Booking stepper modal with steps:
@@ -271,6 +273,7 @@ function ReviewAndConfirm() {
   const [submitting, setSubmitting] = useState(false);
   const [ack, setAck] = useState('');
   const navigate = useNavigate();
+  const toast = useToast();
 
   const onBack = () => actions.setStep(2);
 
@@ -295,7 +298,19 @@ function ReviewAndConfirm() {
     }
   };
 
-  const goToSuccess = (orderId) => {
+  const goToSuccess = async (orderId) => {
+    // Try sending confirmation email; navigate regardless but inform user via toasts
+    try {
+      await sendConfirmation({
+        patient: state.patient,
+        slot: state.slot,
+        amount: '200',
+        orderId,
+      });
+      toast.success('Confirmation email sent!');
+    } catch (e) {
+      toast.error(`Could not send email: ${e?.message || 'Unknown error'}`);
+    }
     actions.close();
     navigate('/success', {
       replace: false,
@@ -312,12 +327,13 @@ function ReviewAndConfirm() {
     setSubmitting(true);
     setAck('');
     try {
-      const { orderId, amount } = await createOrder();
+      const { orderId } = await createOrder();
       // For demo: navigate to success directly after initiating payment.
       // In real integration, navigate after payment confirmation webhook/return.
-      goToSuccess(orderId);
+      await goToSuccess(orderId);
     } catch (e) {
       setAck('Something went wrong. Please try again.');
+      toast.error('Failed to confirm booking. Please try again.');
     } finally {
       setSubmitting(false);
     }
