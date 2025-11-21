@@ -7,6 +7,7 @@ import { getPaymentSummaryText } from '../../features/payments/paymentUtils';
 import FileDropzone from '../common/FileDropzone';
 import { sendConfirmation } from '../../services/emailService';
 import { useToast } from '../common/Toast';
+import { createBooking, confirmPayment, uploadDocument } from '../../services/bookingService';
 
 /**
  * Booking stepper modal with steps:
@@ -277,13 +278,14 @@ function ReviewAndConfirm() {
 
   const onBack = () => actions.setStep(2);
 
-  // Simulate pre-payment reservation or order creation
+  // Create booking/order through service (handles mock vs API)
   const createOrder = async () => {
-    // In future connect to backend using REACT_APP_BACKEND_URL
-    await new Promise((res) => setTimeout(res, 400));
+    // Prepare minimal payload; documents will be uploaded separately if API exists
+    const payload = { patient: state.patient, slot: state.slot, notes: state.patient?.notes || '' };
+    const booking = await createBooking(payload);
     return {
-      orderId: `ORD-${Date.now()}`,
-      amount: '200',
+      orderId: booking?.bookingId || `ORD-${Date.now()}`,
+      amount: String(booking?.amount || '200'),
     };
   };
 
@@ -327,9 +329,27 @@ function ReviewAndConfirm() {
     setSubmitting(true);
     setAck('');
     try {
-      const { orderId } = await createOrder();
-      // For demo: navigate to success directly after initiating payment.
-      // In real integration, navigate after payment confirmation webhook/return.
+      const { orderId, amount } = await createOrder();
+
+      // If any documents present, attempt upload (best-effort).
+      // In mock mode, uploadDocument returns mock metadata.
+      for (const f of state.documents) {
+        try {
+          // bookingId is the same as orderId in our simplified flow
+          await uploadDocument(f, { bookingId: orderId });
+        } catch {
+          // ignore per-file errors
+        }
+      }
+
+      // Confirm payment via service (mock will immediately succeed)
+      try {
+        await confirmPayment({ bookingId: orderId, orderId, amount, method: 'UPI' });
+      } catch {
+        // If confirmation fails, still allow navigation but notify
+        toast.error('Payment confirmation could not be verified right now.');
+      }
+
       await goToSuccess(orderId);
     } catch (e) {
       setAck('Something went wrong. Please try again.');
