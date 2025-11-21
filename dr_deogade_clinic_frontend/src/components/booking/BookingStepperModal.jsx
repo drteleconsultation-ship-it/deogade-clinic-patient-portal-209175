@@ -4,6 +4,7 @@ import { generateTenMinuteSlots, isClinicOpenOn, isValidSlot } from '../../utils
 import { useNavigate } from 'react-router-dom';
 import UPIPaymentButton from '../../features/payments/UPIPaymentButton';
 import { getPaymentSummaryText } from '../../features/payments/paymentUtils';
+import FileDropzone from '../common/FileDropzone';
 
 /**
  * Booking stepper modal with steps:
@@ -204,46 +205,58 @@ function SlotPicker() {
 
 function DocumentUpload() {
   const { state, actions } = useBooking();
-  const inputRef = useRef(null);
 
   const onBack = () => actions.setStep(1);
   const onNext = () => actions.setStep(3);
 
-  const onFiles = (files) => {
-    const arr = Array.from(files || []).slice(0, 5); // limit 5
-    actions.addDocuments(arr);
+  // Update context with new files list
+  const handleFilesChange = (files) => {
+    // For graceful degradation (no backend), we just keep files in context
+    // In future, if backend exists, we can upload here and store metadata/URLs instead.
+    const current = Array.isArray(files) ? files : [];
+    const limited = current.slice(0, 5);
+    // Reset then add to avoid infinite growth if component reuses existing + new
+    // We'll compute delta by replacing with limited
+    // Implemented using reset-add approach:
+    // Remove all existing then add limited
+    // But our actions support only add/remove; simplest: set by clearing then adding
+    // Provide an action to replace would be ideal; for now, emulate:
+    // Clear by removing from end
+    let temp = state.documents;
+    if (temp.length !== limited.length || temp.some((f, i) => f !== limited[i])) {
+      // Replace by resetting with limited
+      // Since context doesn't have replace, we can remove all then add
+      // However removing one by one would cause multiple renders.
+      // Simpler: provide addDocuments on top of empty by navigating from state - but no RESET for documents only.
+      // We'll just dispatch via available actions:
+      // 1) Remove all
+      for (let i = temp.length - 1; i >= 0; i--) {
+        actions.removeDocument(i);
+      }
+      // 2) Add new
+      if (limited.length) actions.addDocuments(limited);
+    }
   };
-
-  const onRemove = (idx) => actions.removeDocument(idx);
 
   return (
     <section aria-labelledby="step3-title">
       <h2 id="step3-title" className="modal-title">Upload documents (optional)</h2>
       <p className="muted">You can share previous prescriptions, x-rays, or reports to help the doctor prepare.</p>
 
-      <div className="upload-area card" role="group" aria-label="Upload files">
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          onChange={(e) => onFiles(e.target.files)}
-          aria-label="Select documents to upload"
-          style={{ display: 'none' }}
+      <div className="card">
+        <FileDropzone
+          label="Add documents"
+          description="Drag & drop or click to choose files"
+          accept={['image/*', '.pdf', 'application/pdf']}
+          maxFiles={5}
+          maxSizeBytes={5 * 1024 * 1024}
+          compressImages={true}
+          compressOptions={{ maxWidth: 1600, maxHeight: 1600, quality: 0.82, mimeType: 'image/jpeg' }}
+          value={state.documents}
+          onChange={handleFilesChange}
+          ariaLabel="Patient document uploader"
         />
-        <button className="btn btn-sm" onClick={() => inputRef.current?.click()} aria-label="Choose files">Choose files</button>
-        <span className="muted" style={{ marginLeft: 8 }}>Allowed: PDF, images. Max 5 files.</span>
       </div>
-
-      {state.documents.length > 0 && (
-        <ul className="file-list" aria-label="Selected documents">
-          {state.documents.map((f, i) => (
-            <li key={i} className="file-item">
-              <span className="file-name">{f.name || `Document ${i + 1}`}</span>
-              <button className="btn btn-sm" onClick={() => onRemove(i)} aria-label={`Remove ${f.name || `Document ${i + 1}`}`}>Remove</button>
-            </li>
-          ))}
-        </ul>
-      )}
 
       <div className="modal-actions">
         <button className="btn btn-sm" onClick={onBack} aria-label="Back to slot picker">Back</button>
