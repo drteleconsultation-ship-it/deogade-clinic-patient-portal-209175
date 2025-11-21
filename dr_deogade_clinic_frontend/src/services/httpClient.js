@@ -4,7 +4,8 @@
 // services can bypass network requests and return mocked data.
 //
 
-import { getEnv } from '../config/env';
+import { getEnv, hasApiBase } from '../config/env';
+import logger from '../utils/logger';
 
 /**
  * Build a full URL from a relative path and configured API base.
@@ -53,12 +54,11 @@ export async function httpRequest(path, { method = 'GET', headers = {}, body, ti
    * Throws: Error with status and data when response not ok.
    */
   const url = buildUrl(path);
+  const log = logger.createLogger('http');
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs);
-  const signals = [controller.signal];
   if (signal) {
-    // Create a composite abort: if external signal aborts, abort our controller too
     const onAbort = () => controller.abort(signal.reason || new Error('Aborted'));
     if (signal.aborted) onAbort();
     else signal.addEventListener('abort', onAbort, { once: true });
@@ -77,6 +77,8 @@ export async function httpRequest(path, { method = 'GET', headers = {}, body, ti
     }
   }
 
+  log.debug('request', { url, method, hasBody: !!opts.body });
+
   try {
     const resp = await fetch(url, opts);
     const data = await parseResponse(resp);
@@ -85,8 +87,10 @@ export async function httpRequest(path, { method = 'GET', headers = {}, body, ti
       const err = new Error(message);
       err.status = resp.status;
       err.data = data;
+      log.warn('response error', { url, status: resp.status, message });
       throw err;
     }
+    log.debug('response ok', { url, status: resp.status });
     return { data, status: resp.status, ok: true };
   } finally {
     clearTimeout(timer);
@@ -120,9 +124,9 @@ export async function httpUpload(path, formData, { headers = {}, timeoutMs, sign
  * Utility to check if the app should use mock mode (no API base configured).
  */
 export function isMockMode() {
-  /** Returns true when there is no API base configured. */
-  const { apiBase } = getEnv();
-  return !apiBase;
+  /** Returns true when there is no API base configured or mockAPIs flag is enabled. */
+  const mock = !hasApiBase();
+  return mock;
 }
 
 export default {

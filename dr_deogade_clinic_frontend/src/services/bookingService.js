@@ -8,6 +8,7 @@
 
 import { httpGet, httpPost, httpUpload, isMockMode } from './httpClient';
 import { getEnv } from '../config/env';
+import logger from '../utils/logger';
 
 /**
  * Utilities for mock data generation
@@ -56,17 +57,22 @@ export async function createBooking(payload) {
    * payload: { patient, slot, notes?, documents? }
    * Returns: { bookingId, amount, currency, status }
    */
+  const log = logger.createLogger('bookingService');
   if (isMockMode()) {
     await sleep(350);
-    return {
+    const mock = {
       bookingId: `BKG-${Date.now()}`,
       amount: '200',
       currency: 'INR',
       status: 'pending',
       mode: 'mock',
     };
+    log.info('createBooking (mock)', mock);
+    return mock;
   }
+  log.info('createBooking (api)');
   const data = await httpPost('/booking', payload);
+  log.debug('createBooking response', data);
   return data;
 }
 
@@ -94,17 +100,22 @@ export async function listSlots(date) {
  */
 export async function confirmPayment({ bookingId, orderId, amount, method = 'UPI' }) {
   /** Confirms a payment and finalizes booking. */
+  const log = logger.createLogger('bookingService');
   if (isMockMode()) {
     await sleep(400);
-    return {
+    const mock = {
       ok: true,
       bookingId,
       orderId: orderId || `ORD-${Date.now()}`,
       status: 'confirmed',
       mode: 'mock',
     };
+    log.info('confirmPayment (mock)', mock);
+    return mock;
   }
+  log.info('confirmPayment (api)', { bookingId, orderId, amount, method });
   const data = await httpPost('/payment/confirm', { bookingId, orderId, amount, method });
+  log.debug('confirmPayment response', data);
   return data;
 }
 
@@ -114,11 +125,11 @@ export async function confirmPayment({ bookingId, orderId, amount, method = 'UPI
  */
 export async function uploadDocument(file, { bookingId }) {
   /** Uploads a single file; returns { url, id } or mock metadata. */
+  const log = logger.createLogger('bookingService');
   if (!file) throw new Error('No file provided');
   if (isMockMode()) {
     await sleep(250);
-    // In mock, we do not persist, just return a fake URL-like identifier
-    return {
+    const meta = {
       id: `doc-${Math.random().toString(36).slice(2)}`,
       name: file.name || 'document',
       size: file.size || 0,
@@ -126,11 +137,15 @@ export async function uploadDocument(file, { bookingId }) {
       url: URL.createObjectURL(new Blob(['mock'])),
       mode: 'mock',
     };
+    log.info('uploadDocument (mock)', { bookingId, name: meta.name, size: meta.size });
+    return meta;
   }
   const form = new FormData();
   form.append('file', file);
   if (bookingId) form.append('bookingId', bookingId);
+  log.info('uploadDocument (api)', { bookingId, name: file.name, size: file.size });
   const data = await httpUpload('/documents', form);
+  log.debug('uploadDocument response', data);
   return data;
 }
 

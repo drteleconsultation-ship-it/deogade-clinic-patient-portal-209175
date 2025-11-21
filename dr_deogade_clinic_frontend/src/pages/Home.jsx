@@ -6,6 +6,7 @@ import HeroClinicCard from '../components/home/HeroClinicCard';
 import ServiceCharges from '../components/home/ServiceCharges';
 import GoogleMapEmbed from '../components/home/GoogleMapEmbed';
 import GoogleReviews from '../components/home/GoogleReviews';
+import { getEnv } from '../config/env';
 
 // PUBLIC_INTERFACE
 export default function Home() {
@@ -71,11 +72,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="reviews" className="section">
-          <div className="container">
-            <GoogleReviews />
-          </div>
-        </section>
+        {getEnv().flags?.enableReviews !== false && (
+          <section id="reviews" className="section">
+            <div className="container">
+              <GoogleReviews />
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
       <CTAStickyBar />

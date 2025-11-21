@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '../../utils/logger';
 
 /**
  * Accessible Error Boundary with fallback UI and reset option.
@@ -22,8 +23,8 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     // You could send this to an error reporting service
-    // eslint-disable-next-line no-console
-    console.error('[ErrorBoundary] Caught error', error, info);
+    const log = logger.createLogger('ErrorBoundary');
+    log.error('Caught error', error, info);
     if (typeof this.props.onError === 'function') {
       try { this.props.onError(error, info); } catch {
         // ignore

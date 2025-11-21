@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { buildUpiDeepLink, tryOpenDeepLink, getPaymentSummaryText } from './paymentUtils';
+import { getEnv } from '../../config/env';
 
 /**
  * Lightweight inlined QR using a third-party chart API (no dependency).
@@ -37,6 +38,8 @@ export default function UPIPaymentButton({
 }) {
   /** Button that triggers UPI intent via deep link and shows QR fallback if needed. */
   const [showQrFallback, setShowQrFallback] = useState(false);
+  const { flags = {} } = getEnv();
+  const qrEnabled = flags.upiQRFallback !== false && showQR !== false;
 
   const deeplink = useMemo(() => {
     return buildUpiDeepLink({
@@ -55,17 +58,15 @@ export default function UPIPaymentButton({
     const attempted = tryOpenDeepLink(deeplink);
     // On desktop or when UPI apps are unavailable, the intent may not open;
     // offer a QR as fallback. We cannot detect failure reliably; expose a manual toggle.
-    if (!attempted && showQR) {
+    if (!attempted && qrEnabled) {
       setShowQrFallback(true);
       onFallbackShown && onFallbackShown();
-    } else {
+    } else if (qrEnabled) {
       // Provide a hint for users where nothing happens
-      if (showQR) {
-        setTimeout(() => {
-          setShowQrFallback(true);
-          onFallbackShown && onFallbackShown();
-        }, 1200);
-      }
+      setTimeout(() => {
+        setShowQrFallback(true);
+        onFallbackShown && onFallbackShown();
+      }, 1200);
     }
   };
 
@@ -75,7 +76,7 @@ export default function UPIPaymentButton({
         {buttonLabel}
       </button>
 
-      {showQR && showQrFallback && (
+      {qrEnabled && showQrFallback && (
         <div className="card" style={{ marginTop: 12 }}>
           <h3 style={{ marginTop: 0 }}>Scan to Pay</h3>
           <p className="muted" style={{ marginTop: 0 }}>

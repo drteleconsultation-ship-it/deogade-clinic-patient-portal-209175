@@ -2,6 +2,16 @@
 
 This project provides a minimal React template with a clean, modern UI and minimal dependencies.
 
+## Feature flags and logging
+
+- REACT_APP_LOG_LEVEL: one of silent, error, warn, info, debug (default: info)
+- REACT_APP_FEATURE_FLAGS:
+  - Accepts JSON string or comma-separated list
+  - Known flags:
+    - mockAPIs: when true, forces mock mode even if API base is configured
+    - upiQRFallback: when false, disables showing UPI QR fallback
+    - enableReviews: when false, hides the reviews section on Home
+
 ## Features
 
 - **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React

@@ -3,6 +3,7 @@
 //
 
 import { httpGet, isMockMode } from './httpClient';
+import logger from '../utils/logger';
 
 /**
  * PUBLIC_INTERFACE
@@ -10,6 +11,7 @@ import { httpGet, isMockMode } from './httpClient';
  */
 export async function fetchReviews({ page = 1, pageSize = 10 } = {}) {
   /** Returns an array of reviews { name, rating, text, date } with pagination metadata when available. */
+  const log = logger.createLogger('reviewsService');
   if (isMockMode()) {
     // Provide deterministic mock data
     const items = [
