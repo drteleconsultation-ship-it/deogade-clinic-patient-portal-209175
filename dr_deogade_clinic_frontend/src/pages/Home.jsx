@@ -4,10 +4,12 @@ import Footer from '../components/layout/Footer';
 import CTAStickyBar from '../components/common/CTAStickyBar';
 import HeroClinicCard from '../components/home/HeroClinicCard';
 import ServiceCharges from '../components/home/ServiceCharges';
+import GoogleMapEmbed from '../components/home/GoogleMapEmbed';
+import GoogleReviews from '../components/home/GoogleReviews';
 
 // PUBLIC_INTERFACE
 export default function Home() {
-  /** Home page with hero, services/charges, and location placeholder */
+  /** Home page with hero, services/charges, Google Map and Reviews sections */
   return (
     <>
       <a href="#main" className="sr-only">Skip to content</a>
@@ -53,9 +55,25 @@ export default function Home() {
         <section id="location" className="section">
           <div className="container">
             <h2 className="section-title">Location</h2>
-            <div className="map-placeholder" role="img" aria-label="Clinic location map placeholder">
-              Google Map integration coming soon
+            <GoogleMapEmbed placeQuery="Dr Deogade Clinic, Nagpur" />
+            <div style={{ marginTop: 8 }}>
+              <a
+                className="btn btn-sm"
+                href="https://www.google.com/maps/search/?api=1&query=Dr%20Deogade%20Clinic%2C%20Nagpur"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open location in Google Maps"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}
+              >
+                Open in Google Maps
+              </a>
             </div>
+          </div>
+        </section>
+
+        <section id="reviews" className="section">
+          <div className="container">
+            <GoogleReviews />
           </div>
         </section>
       </main>

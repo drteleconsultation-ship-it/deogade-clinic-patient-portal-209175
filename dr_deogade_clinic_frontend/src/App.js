@@ -4,6 +4,7 @@ import './theme/theme.css';
 import './App.css';
 import { useTheme } from './theme/useTheme';
 import { BookingProvider } from './context/BookingContext';
+import WhatsAppFloatButton from './components/common/WhatsAppFloatButton';
 
 /**
  * Root App component that provides theme toggle and renders the router.
@@ -25,6 +26,11 @@ function App() {
       <BookingProvider>
         <AppRouter />
       </BookingProvider>
+      {/* Global WhatsApp FAB */}
+      <WhatsAppFloatButton
+        phone="919999999999"
+        message="Hello Dr. Deogade, I would like to book an appointment."
+      />
     </div>
   );
 }
