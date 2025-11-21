@@ -1,9 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useBooking } from '../../context/BookingContext';
 
 // PUBLIC_INTERFACE
 export default function HeroClinicCard() {
   /** Hero card with clinic intro and quick actions */
+  const { actions } = useBooking();
+  const location = useLocation();
+
+  const openModal = (e) => {
+    if (location.pathname === '/booking') {
+      e.preventDefault();
+      actions.open();
+    }
+  };
+
   return (
     <div className="hero-card" role="region" aria-label="Clinic details">
       <span className="badge" aria-label="Professional theme accent">Ocean Professional</span>
@@ -14,7 +25,7 @@ export default function HeroClinicCard() {
       </p>
 
       <div className="hero-cta">
-        <Link to="/booking" className="btn btn-primary btn-lg" aria-label="Book a consultation">
+        <Link to="/booking" className="btn btn-primary btn-lg" aria-label="Book a consultation" onClick={openModal}>
           Book Appointment
         </Link>
         <a

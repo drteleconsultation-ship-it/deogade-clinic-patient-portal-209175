@@ -2,14 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import NotFound from '../pages/NotFound';
-
-// Lazy placeholders for future routes
-const Booking = () => (
-  <main className="container" role="main" aria-labelledby="booking-title" style={{ padding: '3rem 1rem' }}>
-    <h1 id="booking-title">Booking</h1>
-    <p>Booking flow coming soon.</p>
-  </main>
-);
+import Booking from '../pages/Booking';
 
 const Success = () => (
   <main className="container" role="main" aria-labelledby="success-title" style={{ padding: '3rem 1rem' }}>

@@ -1,9 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useBooking } from '../../context/BookingContext';
 
 // PUBLIC_INTERFACE
 export default function Header() {
   /** Site header with clinic branding and primary navigation */
+  const { actions } = useBooking();
+  const location = useLocation();
+  const openModal = (e) => {
+    if (location.pathname === '/booking') {
+      e.preventDefault();
+      actions.open();
+    }
+  };
+
   return (
     <header className="site-header" role="banner">
       <div className="container header-inner">
@@ -23,7 +33,7 @@ export default function Header() {
             <li className="hide-on-mobile"><Link to="/terms">Terms</Link></li>
             <li className="hide-on-mobile"><Link to="/privacy">Privacy</Link></li>
             <li>
-              <Link to="/booking" className="btn btn-primary btn-sm" aria-label="Book appointment">
+              <Link to="/booking" className="btn btn-primary btn-sm" aria-label="Book appointment" onClick={openModal}>
                 Book Now
               </Link>
             </li>

@@ -3,6 +3,7 @@ import AppRouter from './routes/AppRouter';
 import './theme/theme.css';
 import './App.css';
 import { useTheme } from './theme/useTheme';
+import { BookingProvider } from './context/BookingContext';
 
 /**
  * Root App component that provides theme toggle and renders the router.
@@ -21,7 +22,9 @@ function App() {
       >
         {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
       </button>
-      <AppRouter />
+      <BookingProvider>
+        <AppRouter />
+      </BookingProvider>
     </div>
   );
 }
