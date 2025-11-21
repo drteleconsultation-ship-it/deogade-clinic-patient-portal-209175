@@ -6,6 +6,7 @@ import { useTheme } from './theme/useTheme';
 import { BookingProvider } from './context/BookingContext';
 import WhatsAppFloatButton from './components/common/WhatsAppFloatButton';
 import { ToastProvider, ToastHost } from './components/common/Toast';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 /**
  * Root App component that provides theme toggle and renders the router.
@@ -25,9 +26,13 @@ function App() {
         {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
       </button>
       <ToastProvider>
-        <BookingProvider>
-          <AppRouter />
-        </BookingProvider>
+        {/* Wrap whole app routes and booking context with ErrorBoundary */}
+        <ErrorBoundary>
+          <BookingProvider>
+            <AppRouter />
+          </BookingProvider>
+        </ErrorBoundary>
+        {/* Toasts live region */}
         <ToastHost />
       </ToastProvider>
       {/* Global WhatsApp FAB */}

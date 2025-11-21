@@ -21,15 +21,56 @@ import { createBooking, confirmPayment, uploadDocument } from '../../services/bo
 function Modal({ isOpen, titleId, onClose, children }) {
   const overlayRef = useRef(null);
   const dialogRef = useRef(null);
+  const firstFocusable = useRef(null);
+  const lastFocusable = useRef(null);
+  const prevFocus = useRef(null);
 
-  // Trap focus basic
+  // Setup focus trap and restore focus on close
   useEffect(() => {
     if (!isOpen) return;
+    prevFocus.current = document.activeElement;
+
     const dlg = dialogRef.current;
-    const prev = document.activeElement;
-    dlg?.focus();
-    return () => prev?.focus();
-  }, [isOpen]);
+    if (!dlg) return;
+
+    // Find focusable elements
+    const focusables = dlg.querySelectorAll(
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    );
+    firstFocusable.current = focusables[0] || dlg;
+    lastFocusable.current = focusables[focusables.length - 1] || dlg;
+
+    // Focus the dialog for SR and keyboard
+    (firstFocusable.current || dlg).focus();
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose && onClose();
+      } else if (e.key === 'Tab') {
+        if (focusables.length === 0) {
+          e.preventDefault();
+          dlg.focus();
+          return;
+        }
+        // Trap tab within dialog
+        if (e.shiftKey && document.activeElement === firstFocusable.current) {
+          e.preventDefault();
+          lastFocusable.current.focus();
+        } else if (!e.shiftKey && document.activeElement === lastFocusable.current) {
+          e.preventDefault();
+          firstFocusable.current.focus();
+        }
+      }
+    };
+
+    dlg.addEventListener('keydown', onKeyDown);
+    return () => {
+      dlg.removeEventListener('keydown', onKeyDown);
+      // restore previous focus
+      try { prevFocus.current && prevFocus.current.focus && prevFocus.current.focus(); } catch { /* ignore */ }
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
   return (
@@ -43,7 +84,16 @@ function Modal({ isOpen, titleId, onClose, children }) {
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="booking-modal" ref={dialogRef} tabIndex={-1}>
+      <div
+        className="booking-modal"
+        ref={dialogRef}
+        tabIndex={-1}
+        role="document"
+        aria-describedby="booking-modal-desc"
+      >
+        <p id="booking-modal-desc" className="sr-only">
+          Complete the steps to book a consultation: enter patient details, pick a slot, optionally upload documents, and review to confirm.
+        </p>
         <button
           className="modal-close"
           aria-label="Close booking"
@@ -59,10 +109,15 @@ function Modal({ isOpen, titleId, onClose, children }) {
 
 function StepHeader({ current, steps }) {
   return (
-    <ol className="stepper" aria-label="Booking steps">
+    <ol className="stepper" aria-label="Booking steps" role="list">
       {steps.map((s, i) => (
-        <li key={s} aria-current={current === i ? 'step' : undefined} className={current === i ? 'active' : current > i ? 'done' : ''}>
-          <span className="step-index">{i + 1}</span>
+        <li
+          key={s}
+          aria-current={current === i ? 'step' : undefined}
+          className={current === i ? 'active' : current > i ? 'done' : ''}
+          role="listitem"
+        >
+          <span className="step-index" aria-hidden="true">{i + 1}</span>
           <span className="step-title">{s}</span>
         </li>
       ))}
@@ -71,13 +126,20 @@ function StepHeader({ current, steps }) {
 }
 
 function Field({ label, htmlFor, required, children, helpText }) {
+  const describedById = helpText ? `${htmlFor}-help` : undefined;
   return (
     <div className="field">
       <label htmlFor={htmlFor}>
         {label} {required ? <span aria-hidden="true" style={{ color: 'var(--color-error)' }}>*</span> : null}
       </label>
-      {children}
-      {helpText ? <div className="help muted">{helpText}</div> : null}
+      {React.cloneElement(children, {
+        'aria-describedby': describedById,
+      })}
+      {helpText ? (
+        <div id={describedById} className="help muted" role="status" aria-live="polite">
+          {helpText}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -114,13 +176,13 @@ function PatientDetailsForm() {
       <h2 id="step1-title" className="modal-title">Patient details</h2>
       <div className="grid">
         <Field label="Full name" htmlFor="fullName" required helpText={errors.fullName}>
-          <input id="fullName" name="fullName" value={form.fullName} onChange={onChange} aria-invalid={!!errors.fullName} />
+          <input id="fullName" name="fullName" value={form.fullName} onChange={onChange} aria-invalid={!!errors.fullName} required autoComplete="name" />
         </Field>
         <Field label="Phone" htmlFor="phone" required helpText={errors.phone}>
-          <input id="phone" name="phone" value={form.phone} onChange={onChange} placeholder="+91XXXXXXXXXX" aria-invalid={!!errors.phone} />
+          <input id="phone" name="phone" value={form.phone} onChange={onChange} placeholder="+91XXXXXXXXXX" aria-invalid={!!errors.phone} required autoComplete="tel" inputMode="tel" />
         </Field>
         <Field label="Email" htmlFor="email" helpText={errors.email}>
-          <input id="email" name="email" value={form.email} onChange={onChange} placeholder="you@example.com" aria-invalid={!!errors.email} />
+          <input id="email" name="email" value={form.email} onChange={onChange} placeholder="you@example.com" aria-invalid={!!errors.email} autoComplete="email" />
         </Field>
         <Field label="Visit type" htmlFor="visitType">
           <select id="visitType" name="visitType" value={form.visitType} onChange={onChange}>
@@ -196,11 +258,11 @@ function SlotPicker() {
           ))}
         </div>
       )}
-      {error ? <div className="help" style={{ color: 'var(--color-error)' }}>{error}</div> : null}
+      {error ? <div id="slot-error" className="help" style={{ color: 'var(--color-error)' }} role="status" aria-live="assertive">{error}</div> : null}
 
       <div className="modal-actions">
         <button className="btn btn-sm" onClick={onBack} aria-label="Back to patient details">Back</button>
-        <button className="btn btn-primary btn-lg" onClick={onNext} aria-label="Next to document upload">Next</button>
+        <button className="btn btn-primary btn-lg" onClick={onNext} aria-label="Next to document upload" aria-describedby={error ? 'slot-error' : undefined}>Next</button>
       </div>
     </section>
   );

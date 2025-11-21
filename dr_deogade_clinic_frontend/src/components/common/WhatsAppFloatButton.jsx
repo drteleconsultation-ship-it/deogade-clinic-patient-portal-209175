@@ -26,6 +26,7 @@ export default function WhatsAppFloatButton({
         rel="noopener noreferrer"
         aria-label={label}
         className="wa-fab"
+        role="button"
       >
         <span className="wa-icon" aria-hidden="true">💬</span>
         <span className="wa-label">{label}</span>

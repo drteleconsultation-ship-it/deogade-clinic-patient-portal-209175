@@ -88,14 +88,14 @@ export function ToastHost() {
   if (!containerRef.current) return null;
 
   const content = (
-    <div className="toast-wrap" role="status" aria-live="polite" aria-atomic="true">
+    <div className="toast-wrap" role="status" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
       {toasts.map((t) => (
-        <div key={t.id} className={`toast-item ${t.type}`}>
+        <div key={t.id} className={`toast-item ${t.type}`} role="status" aria-live="polite">
           <span className="toast-icon" aria-hidden="true">
             {t.type === 'success' ? '✅' : t.type === 'error' ? '⚠️' : 'ℹ️'}
           </span>
           <div className="toast-msg">{t.message}</div>
-          <button className="toast-close" aria-label="Close" onClick={() => remove(t.id)}>
+          <button className="toast-close" aria-label={`Dismiss ${t.type} notification`} onClick={() => remove(t.id)}>
             ✕
           </button>
         </div>
