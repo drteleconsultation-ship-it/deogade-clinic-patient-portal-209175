@@ -1,13 +1,18 @@
+/* Base resets and typography */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html:focus-within { scroll-behavior: smooth; }
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+img, picture, svg, video, canvas { max-width: 100%; display: block; }
+input, button, textarea, select { font: inherit; }
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 8px; }
+:target { scroll-margin-top: 72px; }
