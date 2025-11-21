@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useBooking } from '../../context/BookingContext';
 import { generateTenMinuteSlots, isClinicOpenOn, isValidSlot } from '../../utils/bookingUtils';
+import { useNavigate } from 'react-router-dom';
+import UPIPaymentButton from '../../features/payments/UPIPaymentButton';
+import { getPaymentSummaryText } from '../../features/payments/paymentUtils';
 
 /**
  * Booking stepper modal with steps:
@@ -254,24 +257,64 @@ function ReviewAndConfirm() {
   const { state, actions } = useBooking();
   const [submitting, setSubmitting] = useState(false);
   const [ack, setAck] = useState('');
+  const navigate = useNavigate();
 
   const onBack = () => actions.setStep(2);
 
-  const onConfirm = async () => {
+  // Simulate pre-payment reservation or order creation
+  const createOrder = async () => {
+    // In future connect to backend using REACT_APP_BACKEND_URL
+    await new Promise((res) => setTimeout(res, 400));
+    return {
+      orderId: `ORD-${Date.now()}`,
+      amount: '200',
+    };
+  };
+
+  const onPaymentInitiated = async () => {
+    setSubmitting(true);
+    setAck('Opening your UPI app… If nothing happens, use the QR below.');
+    // Here we could create an order on backend and record intent
+    try {
+      await createOrder();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const goToSuccess = (orderId) => {
+    actions.close();
+    navigate('/success', {
+      replace: false,
+      state: {
+        patient: state.patient,
+        slot: state.slot,
+        amount: '200',
+        orderId,
+      },
+    });
+  };
+
+  const handleConfirm = async () => {
     setSubmitting(true);
     setAck('');
     try {
-      // In future: POST to backend using env REACT_APP_BACKEND_URL
-      await new Promise((res) => setTimeout(res, 800));
-      setAck('Your appointment request has been submitted. We will confirm shortly.');
-      // For now just close after a small delay
-      setTimeout(() => actions.close(), 1000);
+      const { orderId, amount } = await createOrder();
+      // For demo: navigate to success directly after initiating payment.
+      // In real integration, navigate after payment confirmation webhook/return.
+      goToSuccess(orderId);
     } catch (e) {
       setAck('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
+
+  const paymentNote = getPaymentSummaryText({
+    patient: state.patient,
+    slot: state.slot,
+    amount: '200',
+  });
 
   return (
     <section aria-labelledby="step4-title">
@@ -307,10 +350,36 @@ function ReviewAndConfirm() {
 
       {ack && <div className="card" role="status" style={{ marginTop: 12 }}>{ack}</div>}
 
+      <div className="card" style={{ marginTop: 12 }}>
+        <h3 style={{ marginTop: 0 }}>Pay to confirm</h3>
+        <p className="muted" style={{ marginTop: 0 }}>
+          Tap to pay using your UPI app. If it doesn’t open, a QR will be shown.
+        </p>
+        <UPIPaymentButton
+          vpa="clinic@upi"
+          payeeName="Dr Deogade Clinic"
+          amount="200"
+          note={paymentNote}
+          onInitiated={onPaymentInitiated}
+          onFallbackShown={() => {}}
+        />
+        <div style={{ marginTop: 10 }}>
+          <button
+            className="btn btn-sm"
+            onClick={handleConfirm}
+            aria-label="I have completed the payment"
+            style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}
+            disabled={submitting}
+          >
+            {submitting ? 'Processing…' : 'I have completed the payment'}
+          </button>
+        </div>
+      </div>
+
       <div className="modal-actions">
         <button className="btn btn-sm" onClick={onBack} disabled={submitting} aria-label="Back to uploads">Back</button>
-        <button className="btn btn-primary btn-lg" onClick={onConfirm} disabled={submitting} aria-label="Confirm booking">
-          {submitting ? 'Submitting…' : 'Confirm booking'}
+        <button className="btn btn-primary btn-lg" onClick={handleConfirm} disabled={submitting} aria-label="Confirm booking">
+          {submitting ? 'Submitting…' : 'Confirm & Proceed'}
         </button>
       </div>
     </section>
